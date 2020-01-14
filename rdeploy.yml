@@ -1,0 +1,59 @@
+---
+#
+# Pre-requisite: ssh server must be running (hmm...) & user must be sudoer without password
+#
+# Steps required before running deployer:
+#
+# On target:
+#
+# ssh: apt-get install openssh-server
+#      yum/dnf install openssh-server + systemctl enable sshd.service + systemctl start sshd.service
+#
+# sudo visudo to set super user w/o password
+#
+# On host:
+#
+# ssh-copy-id -i ~/.ssh/key_pub user@ip
+#
+
+consts:
+  RPM_UPDATE: sudo dnf check-update
+  RPM_UPGRADE: sudo dnf upgrade -y
+  RPM_INSTALL: sudo dnf install -y
+
+  DEB_UPDATE: sudo apt-get update
+  DEB_UPGRADE: sudo DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::="--force-confnew" --force-yes -fuy dist-upgrade
+  DEB_INSTALL: sudo DEBIAN_FRONTEND=noninteractive apt-get install -qq
+
+gems: sudo gem install --no-document
+
+location:
+    home:
+        REPO: http://192.168.1.32:8080/repo
+
+packaging:
+    deb:
+        update: __DEB_UPDATE__
+        upgrade: __DEB_UPGRADE__
+        install: __DEB_INSTALL__
+
+    rpm:
+        update: __RPM_UPDATE__
+        upgrade: __RPM_UPGRADE__
+        install: __RPM_INSTALL__
+
+
+targets: "./rdeploy.config.json"
+default_target: default
+
+playbooks:
+    - name: test
+      active: no
+
+target:
+    location: home
+    distro: lm18
+    packaging: deb
+    update: yes
+    upgrade: no
+    type: ssh

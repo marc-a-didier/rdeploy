@@ -1,0 +1,144 @@
+---
+#
+# CDsDB deployment
+#
+
+- depends:
+    distro:
+    - lm17.3
+    playbooks:
+    - ruby_compile
+
+- consts:
+    root_dir: Dev/Ruby
+    cdsdb_dir: __root_dir__/cdsdb
+
+    distro:
+      lm17.3:
+        gems_root: /usr/local/lib/ruby
+      lm18:
+        gems_root: /var/lib
+      fed31:
+        gems_root: /var/lib
+
+- shell:
+    packaging:
+    - rpm
+    commands:
+    - sudo dnf group install 'C Development Tools and Libraries' -y
+
+- install:
+    packaging:
+    - deb
+    packages:
+    - ruby-dev
+    - libtag1-dev
+    - libtagc0-dev
+    - libgtk2.0-dev
+    - libsqlite3-dev
+    - libgstreamer1.0-dev
+    - libdiscid-dev
+    - sqlite3
+    - git
+
+- install:
+    distro:
+    - lm17.3
+    packages:
+    - libgstreamer0.10-dev
+    - gstreamer0.10-plugins-bad
+    - gstreamer0.10-plugins-ugly
+    - gstreamer1.0-plugins-bad
+    - gstreamer1.0-plugins-ugly
+    - sqliteman
+
+- install:
+    packaging:
+    - rpm
+    packages:
+    - redhat-rpm-config # Putain de package de merde!!!
+    - kernel-devel      # kernel headers for vbox
+    - taglib
+    - taglib-devel
+    - gdbm-devel
+    - gtk2-devel
+    - sqlite-devel
+    - gstreamer-devel
+    - gstreamer1-devel
+    - gstreamer1-plugins-bad-free
+    - gobject-introspection-devel
+    - sqlite
+    - openssl-devel
+    - ruby
+    - ruby-devel
+    - git
+
+- gems:
+    list:
+    - rake
+    - sqlite3
+    - taglib2
+    - gio2
+    - gtk2
+    - gstreamer
+    - ruby-prof
+    - nokogiri
+    - discid
+    - musicbrainz
+    - ruby-freedb
+
+- gems:
+    distro:
+    - lm17.3
+    list:
+    - gstreamer -v 1.2.6
+
+- shell:
+    disabled: no
+    commands:
+    - sudo gem update --no-document
+    - if [ -d /home/__{user}__/__cdsdb_dir__ ] ; then rm -rf /home/__{user}__/__cdsdb_dir__; fi;
+    - mkdir -p /home/__{user}__/__root_dir__
+#     - |
+#        mkdir -p /home/__{user}__/__root_dir__
+#        cd /home/__{user}__/__root_dir__
+#        git clone https://github.com/marc-a-didier/cdsdb.git
+
+- resources:
+    disabled: no
+    dirs:
+      - src: $HOME/__cdsdb_dir__
+        dest: /home/__{user}__/__cdsdb_dir__
+        names:
+        - icons
+        - covers
+        - src
+        owner: __{user}__:__{user}__
+      - src: /usr/share
+        names:
+        - iso-flag-png
+    files:
+      - src: $HOME/__cdsdb_dir__/db
+        dest: /home/__{user}__/__cdsdb_dir__/db
+        names:
+        - cds.db
+        owner: __{user}__:__{user}__
+
+- resources:
+    distro:
+    - lm17.3
+    updates:
+      - file: __gems_root__/gems/2.3.0/gems/gstreamer-1.2.6/lib/gst.rb
+        sed:
+        - pattern: s/^GLib.prepend_environment_path/# GLib.prepend_environment_path/
+
+- resources:
+    files: [ { "src": "$HOME/.ssh", "dest": "/home/__{user}__/.ssh", "names": ["cdsdb.pem"], "owner": "__{user}__:__{user}__" , "mode": "0600"} ]
+
+- resources:
+    disabled: yes
+    dirs:
+      - src: $HOME/Music
+        dest: /home/__{user}__/Music
+        names:
+        - Rock

@@ -1,0 +1,34 @@
+
+- restrict:
+    type:
+    - container
+
+- consts:
+    ruser: test
+
+- install:
+    packages:
+    - sudo
+
+- shell:
+    commands:
+    - useradd --create-home --uid 1020 --user-group --password `openssl passwd -crypt __ruser__` __ruser__
+    - printf "__ruser__  ALL=(ALL:ALL) NOPASSWD:ALL\n" >> /etc/sudoers
+
+- resources:
+    files:
+    - src: $HOME/.ssh
+      dest: /home/__ruser__/.ssh
+      names:
+      - deployer_rsa.pub
+
+- shell:
+    commands:
+    - cat /home/__ruser__/.ssh/deployer_rsa.pub >>/home/__ruser__/.ssh/authorized_keys
+    - chown __ruser__:__ruser__ /home/__ruser__/.ssh/authorized_keys
+
+
+- local_shell:
+    disabled: yes
+    commands:
+    - sshpass -p __ruser__ ssh-copy-id __ruser__@__{host}__

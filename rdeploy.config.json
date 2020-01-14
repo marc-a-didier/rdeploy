@@ -1,0 +1,65 @@
+{
+    "default":
+        [
+          {
+            "hosts": ["192.168.1.41"],
+            "port": 22,
+            "user": "test",
+            "ssh-key": "$HOME/.ssh/rdeploy_rsa",
+            "packaging": "rpm",
+            "distro": "fed31",
+            "update": false
+          }
+        ],
+    "docker-root":
+        [
+          {
+            "hosts": ["test_sshd"],
+            "user": "root",
+            "password": "root",
+            "packaging": "deb",
+            "distro": "lm18",
+            "type": "container"
+          }
+        ],
+    "docker-ssh":
+        [
+          {
+            "hosts": ["127.0.0.1:32768", "127.0.0.1:32769"],
+            "user": "test2",
+            "password": "test2",
+            "packaging": "deb",
+            "distro": "lm18",
+            "type": "ssh"
+          }
+        ],
+    "docker":
+        [
+          {
+            "hosts": ["test_sshd"],
+            "user": "test2",
+            "password": "test2",
+            "packaging": "deb",
+            "distro": "lm18",
+            "type": "container"
+          }
+        ],
+    "test":
+        [
+          {
+            "hosts": ["192.168.1.41"],
+            "user": "test",
+            "ssh-key": "$HOME/.ssh/rdeploy_rsa",
+            "packaging": "rpm",
+            "distro": "fed31"
+          },
+          {
+            "hosts": ["test_sshd"],
+            "user": "test2",
+            "password": "test2",
+            "packaging": "deb",
+            "distro": "lm18",
+            "type": "container"
+          }
+    ]
+}
