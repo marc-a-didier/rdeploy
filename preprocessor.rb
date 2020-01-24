@@ -25,9 +25,11 @@ class PreProcessor
         obj.each { |k, v| self.sub_consts(v) } if obj.is_a?(Hash)
         obj.each { |e| self.sub_consts(e) } if obj.is_a?(Array)
         obj.scan(/__(\w+)__/).each do |m|
+            raise "const not foud: #{m[0]})" unless @consts[m[0]]
             obj.sub!("__#{m[0]}__", @consts[m[0]])
         end if obj.is_a?(String)
         obj.scan(/__\{(\w+)\}__/).each do |m|
+            raise "target const not foud: #{m[0]})" unless @target[m[0]]
             obj.sub!("__\{#{m[0]}\}__", @target[m[0]])
         end if obj.is_a?(String)
         return obj

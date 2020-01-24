@@ -75,7 +75,7 @@ class RDeploy
 
     # mode==:force -> re-execute the command even if it was successful, mainly due to clean up
     def remote_exec(cmd, mode = :std)
-        cmd = "docker exec --user #{@target['user']} #{@target['host']} sh -c '"+cmd.gsub("'", "\\\\'")+"\'" if container?
+        cmd = "docker exec --user #{@target['user']} #{@target['host']} sh -c '"+cmd.gsub("'", "'\\\\''")+"'" if container?
         return prepare_and_exec(cmd) { container? ? local_exec(cmd) : @ssh.ssh_exec(cmd, @logger) }
     end
 
@@ -194,6 +194,7 @@ class RDeploy
 
     def run
         stages = PreProcessor.new(@conf, @target, @opts).analyze
+        return if stages.empty?
 
         @ssh = SSHUtils.connect_with_credentials(@target['host'], @target) unless @opts[:dry_run] || container?
 
@@ -223,7 +224,7 @@ end
 module Runner
 
     OPTIONS = [
-        CmdParser::Option.new(:pb, '--pb p', { :call_back => ->(v) { v.split(',') } }), # List of playbooks
+        CmdParser::Option.new(:pb, '--pb p', { :default => '', :call_back => ->(v) { v.split(',') } }), # List of playbooks
         CmdParser::Option.new(:location, '--location p'),
         CmdParser::Option.new(:distro, '--distro p'),
         CmdParser::Option.new(:packaging, '--packaging p'),
@@ -238,16 +239,15 @@ module Runner
     ]
 
     def self.dispatch
+        Dir.mkdir('./logs') unless Dir.exists?('./logs')
+
         conf = ConfigLoader.load(__FILE__.sub(/rb$/, 'yml'), [:sub_env_vars])
 
         opts = CmdParser.parse(OPTIONS)
 
         targets = ConfigLoader.load(opts[:targets] || conf['targets'], [:sub_env_vars])
 
-        if opts[:pb]
-            opts[:pb].each { |pb| conf['playbooks'] << { 'name' => pb, 'active' => true } }
-            conf['playbooks'] = conf['playbooks'].select { |pb| pb['active'] }.uniq { |pb| pb['name'] }
-        end
+        conf['playbooks'] = (conf['playbooks'] << opts[:pb].map { |pb| { 'name' => pb, 'active' => true } }).flatten.select { |pb| pb['active'] }
 
         (opts[:target] ? targets[opts[:target]] : targets[conf['default_target']]).map do |target|
             [:hosts, :port, :user, :location, :distro, :packaging, :type].each { |opt| target[opt.to_s] = opts[opt] if opts[opt] }

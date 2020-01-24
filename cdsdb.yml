@@ -13,14 +13,6 @@
     root_dir: Dev/Ruby
     cdsdb_dir: __root_dir__/cdsdb
 
-    distro:
-      lm17.3:
-        gems_root: /usr/local/lib/ruby
-      lm18:
-        gems_root: /var/lib
-      fed31:
-        gems_root: /var/lib
-
 - shell:
     packaging:
     - rpm
@@ -128,7 +120,7 @@
     distro:
     - lm17.3
     updates:
-      - file: __gems_root__/gems/2.3.0/gems/gstreamer-1.2.6/lib/gst.rb
+      - file: /usr/local/lib/ruby/gems/2.3.0/gems/gstreamer-1.2.6/lib/gst.rb
         sed:
         - pattern: s/^GLib.prepend_environment_path/# GLib.prepend_environment_path/
 
